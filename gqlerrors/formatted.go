@@ -44,22 +44,22 @@ func FormatError(err error) FormattedError {
 			originalError: err,
 		}
 		if err := err.OriginalError; err != nil {
-			if extended, ok := err.(ExtendedError); ok {
-				ret.Extensions = extended.Extensions()
-			}
-			if formatted, ok := err.(FormattedError); ok {
-				ret.Extensions = formatted.Extensions
+			switch err := err.(type) {
+			case ExtendedError:
+				ret.Extensions = err.Extensions()
+			case FormattedError:
+				ret.Extensions = err.Extensions
 			}
 		}
 		return ret
 	case Error:
 		return FormatError(&err)
 	default:
-		return FormattedError{
+		return FormatError(&Error{
 			Message:       err.Error(),
 			Locations:     []location.SourceLocation{},
-			originalError: err,
-		}
+			OriginalError: err,
+		})
 	}
 }
 
